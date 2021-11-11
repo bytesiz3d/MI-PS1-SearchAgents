@@ -29,9 +29,17 @@ class Meta:
     action: A = None
     total_cost: float = 0
     backward_cost: float = 0
+    order: int = 0
     explored: bool = False
 
     def __lt__(self, other: Meta) -> bool:
+        '''
+        Returns true if this state should precede another state.
+        Maintains a stable order for the heapq by keeping insertion order.
+        '''
+        if self.total_cost == other.total_cost:
+            return self.order < other.order
+
         return self.total_cost < other.total_cost
 
 
@@ -77,6 +85,7 @@ class ISearch:
         Implements the standard search algorithm, returns a list of actions if a path is found,
         and `None` otherwise.
         '''
+        order = 0
         self.cache[initial_state] = Meta()
         self.add(initial_state)
 
@@ -95,7 +104,8 @@ class ISearch:
                 total, back = self.get_cost(problem, heuristic, backward_cost, state, s_act, successor)
 
                 if self.should_add(successor, total):
-                    self.cache[successor] = Meta(state, s_act, total, back)
+                    order += 1
+                    self.cache[successor] = Meta(state, s_act, total, back, order)
                     self.add(successor)
 
         return None
