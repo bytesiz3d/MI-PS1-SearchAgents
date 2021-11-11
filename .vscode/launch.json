@@ -1,0 +1,66 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Dungeon",
+            "type": "python",
+            "request": "launch",
+            "program": "play_dungeon.py",
+            "args": [
+                "dungeons\\dungeon${input:testCase}.txt",
+                "-a",
+                "${input:algorithm}",
+                "-hf",
+                "${input:heuristic}"
+            ],
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Graph",
+            "type": "python",
+            "request": "launch",
+            "program": "play_graph.py",
+            "args": [
+                "graphs\\graph${input:testCase}.json",
+                "-a",
+                "${input:algorithm}",
+            ],
+            "console": "integratedTerminal"
+        }
+    ],
+    "inputs": [
+        {
+            "id": "testCase",
+            "type": "promptString",
+            "description": "Test case number (default 1)",
+            "default": "1"
+        },
+        {
+            "type": "pickString",
+            "id": "algorithm",
+            "description": "Search algorithm (default astar)",
+            "options": [
+                "bfs",
+                "dfs",
+                "ucs",
+                "astar",
+                "gbfs"
+            ],
+            "default": "astar"
+        },
+        {
+            "type": "pickString",
+            "id": "heuristic",
+            "description": "Heuristic function (default weak)",
+            "options": [
+                "zero",
+                "weak",
+                "strong",
+            ],
+            "default": "weak"
+        },
+    ]
+}
