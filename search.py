@@ -53,7 +53,7 @@ class ISearch:
     frontier: Any
 
     # Adds a state to the frontier
-    add: Callable[[S], None]
+    add: Callable[[S]]
 
     # Retrieves a state from the frontier
     retrieve: Callable[[], Tuple[Meta, S]]
@@ -85,17 +85,24 @@ class ISearch:
         Implements the standard search algorithm, returns a list of actions if a path is found,
         and `None` otherwise.
         '''
+        # Increasing insertion order
         order = 0
+
+        # Initial state has no cost or parent
         self.cache[initial_state] = Meta()
         self.add(initial_state)
 
+        # While the frontier contains nodes to expand
         while self.frontier:
+            # Retrieve a node from the frontier
             metadata, state = self.retrieve()
             backward_cost = metadata.backward_cost
 
+            # Expand the node if it has not yet been expanded
             if self.cache[state].explored: continue
             self.cache[state].explored = True
 
+            # Check if we have arrived at the goal
             if problem.is_goal(state): return self.trace_path(state)
 
             actions = problem.get_actions(state)
