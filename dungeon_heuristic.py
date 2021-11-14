@@ -13,63 +13,47 @@ def weak_heuristic(problem: DungeonProblem, state: DungeonState):
 
 
 def strong_heuristic(problem: DungeonProblem, state: DungeonState) -> float:
-    goal, distance_to_exit = get_current_goal(problem, state.remaining_coins)
-
-    # initial_coins = problem.initial_state.remaining_coins
-    # eaten = state.player
-
-    # # Verify if we're following the path
-    # initial_coins = problem.initial_state.remaining_coins
-    # eaten = state.player
-    # if eaten in initial_coins:
-    #     goal, distance_to_exit = get_current_goal(problem, state.remaining_coins | {eaten})
-
-    #     # If path is being followed, revert check
-    #     if goal == eaten:
-    #         goal, distance_to_exit = get_current_goal(problem, state.remaining_coins)
-
-    # print(state.player, state.remaining_coins, goal)
-    # for rem, (pt, d) in problem.cache().items():
-    #     print(rem, pt, d)
-    # print("-" * 120)
-
+    init_path(problem)
+    goal, distance_to_exit = get_current_goal(problem, state.remaining_coins, state.player)
     return manhattan_distance(state.player, goal) + distance_to_exit
 
 
-def get_current_goal(problem: DungeonProblem, remaining_coins: FrozenSet[Point]) -> Tuple[Point, int]:
+def get_current_goal(problem: DungeonProblem, remaining_coins: FrozenSet[Point], player: Point) -> Tuple[Point, int]:
     cache = problem.cache()
-    if remaining_coins in cache:
-        return cache[remaining_coins]
+    points = cache["points"]
 
-    points = [problem.layout.exit]
-    distances = [0]
+    for point in points:
+        if point in remaining_coins:
+            return point, manhattan_distance(problem.layout.exit, point)
 
-    coins = list(remaining_coins)
+    return problem.layout.exit, 0
+
+
+def init_path(problem: DungeonProblem):
+    '''
+    - Sort points by closeness to each other
+    - Form a path ending with the goal
+    '''
+    # Form a path of coins towards the exit
+    cache = problem.cache()
+    cache["points"] = []
+    last_point = problem.initial_state.player
 
     # Empty coins
-    if not len(coins):
-        cache[remaining_coins] = (points[0], distances[0])
-        return cache[remaining_coins]
+    initial_state = problem.get_initial_state()
+    coins = list(initial_state.remaining_coins)
+    if not len(coins): return
 
     while coins:
-        # Find the closest coin to the last inserted coin
         closest_coin = 0
         closest_coin_dist = problem.layout.width * problem.layout.height
+
         for i, coin in enumerate(coins):
-            dist = manhattan_distance(points[0], coin)
+            dist = manhattan_distance(last_point, coin)
             if dist < closest_coin_dist:
                 closest_coin = i
                 closest_coin_dist = dist
 
-        # Insert the coin and its distance
-        points.insert(0, coins[closest_coin])
-        distances.insert(0, closest_coin_dist + distances[0])
-
-        # Add this state to cache
-        remaining = frozenset(points[:-1])
-        if remaining not in cache:
-            cache[remaining] = (points[0], distances[0])
-
+        cache["points"].append(coins[closest_coin])
+        last_point = coins[closest_coin]
         del coins[closest_coin]
-
-    return cache[remaining_coins]
