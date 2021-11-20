@@ -98,6 +98,7 @@ class ISearch:
         while self.frontier:
             # Retrieve a node from the frontier
             metadata, state = self.retrieve()
+            problem.cache()["current_parent"] = state
             backward_cost = metadata.backward_cost
 
             # Expand the node if it has not yet been expanded

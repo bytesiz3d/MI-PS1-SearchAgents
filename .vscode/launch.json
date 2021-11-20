@@ -15,7 +15,8 @@
                 "${input:algorithm}",
                 "-hf",
                 "${input:heuristic}",
-                "--ansicolors"
+                "--ansicolors",
+                "--checks",
             ],
             "console": "integratedTerminal"
         },
