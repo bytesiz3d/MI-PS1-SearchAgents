@@ -85,10 +85,9 @@ class ISearch:
         Implements the standard search algorithm, returns a list of actions if a path is found,
         and `None` otherwise.
         '''
+        self.path = problem.cache()["path"] = {}
+
         # Increasing insertion order
-        problem_cache = problem.cache()
-        problem_cache["path"] = {}
-        self.path = problem_cache["path"]
         order = 0
 
         # Initial state has no cost or parent
