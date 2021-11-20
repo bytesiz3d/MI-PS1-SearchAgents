@@ -65,20 +65,20 @@ class ISearch:
     get_cost: Callable[[Problem, HeuristicFunction, float, S, A, S], Tuple[float, float]] = lambda *_: (0, 0)
 
     # Cache of state to metadata
-    cache: Dict[S, Meta] = {}
+    path: Dict[S, Meta]
 
     def trace_path(self, state: S) -> Solution:
         '''
         Traces the path from the goal state to the start state, returns a list of actions.
         '''
-        path = []
-        meta = self.cache[state]
+        action_path = []
+        meta = self.path[state]
 
         while meta.parent:
-            path.append(meta.action)
-            meta = self.cache[meta.parent]
+            action_path.append(meta.action)
+            meta = self.path[meta.parent]
 
-        return path[::-1]
+        return action_path[::-1]
 
     def search(self, problem: Problem[S, A], initial_state: S, heuristic: HeuristicFunction = None) -> Solution:
         '''
@@ -86,10 +86,13 @@ class ISearch:
         and `None` otherwise.
         '''
         # Increasing insertion order
+        problem_cache = problem.cache()
+        problem_cache["path"] = {}
+        self.path = problem_cache["path"]
         order = 0
 
         # Initial state has no cost or parent
-        self.cache[initial_state] = Meta()
+        self.path[initial_state] = Meta()
         self.add(initial_state)
 
         # While the frontier contains nodes to expand
@@ -99,8 +102,8 @@ class ISearch:
             backward_cost = metadata.backward_cost
 
             # Expand the node if it has not yet been expanded
-            if self.cache[state].explored: continue
-            self.cache[state].explored = True
+            if self.path[state].explored: continue
+            self.path[state].explored = True
 
             # Check if we have arrived at the goal
             if problem.is_goal(state): return self.trace_path(state)
@@ -112,7 +115,7 @@ class ISearch:
 
                 if self.should_add(successor, total):
                     order += 1
-                    self.cache[successor] = Meta(state, s_act, total, back, order)
+                    self.path[successor] = Meta(state, s_act, total, back, order)
                     self.add(successor)
 
         return None
@@ -128,13 +131,13 @@ class BFS(ISearch):
     def __init__(self):
         self.frontier = deque()
         self.retrieve = self.frontier.popleft
-        self.cache = {}
+        self.path = {}
 
     def add(self, state: S):
-        self.frontier.append((self.cache[state], state))
+        self.frontier.append((self.path[state], state))
 
     def should_add(self, state: S, cost: float) -> bool:
-        return state not in self.cache
+        return state not in self.path
 
 
 class DFS(ISearch):
@@ -149,14 +152,14 @@ class DFS(ISearch):
     def __init__(self):
         self.frontier = deque()
         self.retrieve = self.frontier.popleft
-        self.cache = {}
+        self.path = {}
 
     def add(self, state: S):
-        self.frontier.appendleft((self.cache[state], state))
+        self.frontier.appendleft((self.path[state], state))
 
     def should_add(self, state: S, cost: float) -> bool:
-        first = state not in self.cache
-        return first or not self.cache[state].explored
+        first = state not in self.path
+        return first or not self.path[state].explored
 
 
 class IPrioritySearch(ISearch):
@@ -168,17 +171,17 @@ class IPrioritySearch(ISearch):
 
     def __init__(self):
         self.frontier = list()
-        self.cache = {}
+        self.path = {}
 
     def retrieve(self) -> Tuple[Meta, S]:
         return heappop(self.frontier)
 
     def add(self, state: S):
-        heappush(self.frontier, (self.cache[state], state))
+        heappush(self.frontier, (self.path[state], state))
 
     def should_add(self, state: S, cost: float) -> bool:
-        first = state not in self.cache
-        return first or not self.cache[state].explored and cost < self.cache[state].total_cost
+        first = state not in self.path
+        return first or not self.path[state].explored and cost < self.path[state].total_cost
 
 
 class UCS(IPrioritySearch):

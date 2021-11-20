@@ -14,7 +14,8 @@
                 "-a",
                 "${input:algorithm}",
                 "-hf",
-                "${input:heuristic}"
+                "${input:heuristic}",
+                "--ansicolors"
             ],
             "console": "integratedTerminal"
         },
@@ -41,7 +42,7 @@
         {
             "type": "pickString",
             "id": "algorithm",
-            "description": "Search algorithm (default astar)",
+            "description": "Search algorithm (default gbfs)",
             "options": [
                 "bfs",
                 "dfs",
@@ -49,18 +50,18 @@
                 "astar",
                 "gbfs"
             ],
-            "default": "astar"
+            "default": "gbfs"
         },
         {
             "type": "pickString",
             "id": "heuristic",
-            "description": "Heuristic function (default weak)",
+            "description": "Heuristic function (default strong)",
             "options": [
                 "zero",
                 "weak",
                 "strong",
             ],
-            "default": "weak"
+            "default": "strong"
         },
     ]
 }
